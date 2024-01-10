@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  db:
+    restart: always
+    build:
+      context: ./sql
+      dockerfile: ./Dockerfile
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DB
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./sql:/usr/src/sql
+
+  api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - ./api:/app/api
+
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      - '5000:80'
+      - '25:25'
+      - '143:143'
+    volumes:
+        - smtp4dev-data:/smtp4dev
+    environment:
+      - ServerOptions__HostName=smtp4dev
+      - RelayOptions__Login=$MAIL_USER
+      - RelayOptions__Password=$MAIL_PASSWORD
+  
+volumes:
+  db:
+  smtp4dev-data:
