@@ -8,3 +8,5 @@ todo
 
 # Database
 *.db
+
+./app/node_modules
