@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 	id_user SERIAL PRIMARY KEY,
 	id_user_status INT NOT NULL,
 	alpha3 CHAR(3) NOT NULL, -- Nationality
-	password VARCHAR(64),
+	password VARCHAR(64) NOT NULL,
 	first_name VARCHAR(64) NOT NULL, 
 	last_name VARCHAR(64) NOT NULL,
 	date_insert TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

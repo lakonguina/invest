@@ -36,7 +36,7 @@ def user_register(
 		)
 
 	if user.email:
-		email = get_email(session, user.email.email)
+		email = get_email(session, user.email)
 
 		if email:
 			raise HTTPException(
@@ -45,7 +45,7 @@ def user_register(
 			)
 
 	if user.phone:
-		phone = get_phone(session, user.phone.phone)
+		phone = get_phone(session, user.phone)
 
 		if phone:
 			raise HTTPException(
@@ -54,7 +54,7 @@ def user_register(
 			)
 
 	# Create user
-	db_email = create_user(session, user)
+	# db_email = create_user(session, user)
 
 	return {"detail": "User created"}
 

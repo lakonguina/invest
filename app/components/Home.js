@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Text, TextInput, View } from 'react-native';
+import { Button, ScrollView, Text, TextInput, View } from 'react-native';
 import styles from '../style';
 
 const Home = ({ navigation }) => {
@@ -7,7 +7,7 @@ const Home = ({ navigation }) => {
  	const [password, onChangePassword] = React.useState('');
 
 	return (
-		<View style={styles.container}>
+		<ScrollView style={styles.container}>
 			<Text style={[styles.bold]}>Connexion</Text>
 			<Text style={[styles.label]}>Phone</Text>
 			<TextInput
@@ -34,7 +34,7 @@ const Home = ({ navigation }) => {
       				onPress={() => navigation.navigate('Register')}
     			/>
 			</View>
-		</View>
+		</ScrollView>
 	);
 }
 

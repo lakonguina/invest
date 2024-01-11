@@ -4,8 +4,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from api.schemas.address import Address, AddressIn, AddressOut
 from api.schemas.country import Country, CountryIn
-from api.schemas.email import Email, EmailField, EmailOut
-from api.schemas.phone import Phone, PhoneField, PhoneOut
+from api.schemas.email import Email, EmailField, EmailFieldOptional, EmailOut
+from api.schemas.phone import Phone, PhoneField, PhoneFieldOptional, PhoneOut
 from api.schemas.document import DocumentUser
 
 
@@ -25,8 +25,8 @@ class UserPasswordField(SQLModel):
 
 
 class UserBase(SQLModel):
-    first_name: str = Field(max_length=64)
-    last_name: str = Field(max_length=64)
+    first_name: str = Field(max_length=64, min_length=1)
+    last_name: str = Field(max_length=64, min_length=1)
 
 
 class User(UserBase, UserPasswordField, table=True):
@@ -75,10 +75,10 @@ class UserCreate(UserBase, UserPasswordField):
 	country: CountryIn
 	address: AddressIn
 
-class UserCreatePerson(UserBase):
+
+class UserCreatePerson(UserPasswordField, PhoneFieldOptional, EmailFieldOptional, UserBase):
 	country: CountryIn
-	phone: PhoneField | None
-	email: EmailField | None
+
 
 class UserLoginByEmail(EmailField, UserPasswordField):
 	pass

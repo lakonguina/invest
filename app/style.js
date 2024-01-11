@@ -19,6 +19,10 @@ const styles = StyleSheet.create({
     	borderWidth: 1,
 		padding: 10,
 	},
+	select: {
+    	borderWidth: 1,
+		paddingLeft: 10,
+	},
 	button: {
 		backgroundColor: "black",
 		marginTop: 10,

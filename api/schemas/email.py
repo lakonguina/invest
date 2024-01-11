@@ -10,6 +10,8 @@ from sqlmodel import Field, Relationship, SQLModel
 class EmailField(SQLModel):
     email: EmailStr
 
+class EmailFieldOptional(SQLModel):
+    email: EmailStr | None
 
 class EmailOut(EmailField):
 	is_valid: bool = Field(default=False)

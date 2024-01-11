@@ -9,6 +9,10 @@ class PhoneField(SQLModel):
     phone: str
 
 
+class PhoneFieldOptional(SQLModel):
+    phone: str | None
+
+
 class PhoneOut(PhoneField):
     is_valid: bool = Field(default=False)
 
