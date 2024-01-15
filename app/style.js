@@ -6,6 +6,9 @@ const styles = StyleSheet.create({
 		paddingLeft: 30,
 		paddingRight: 30,
 	},
+	flex: {
+		flexGrow: 1
+	},
 	red: {
 		color: "red",
 	},
