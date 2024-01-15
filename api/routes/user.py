@@ -24,39 +24,11 @@ from api.crud.user import create_user, get_user_by_email, get_user_by_id
 
 router = APIRouter(tags=["Users"])
 
-@router.post("/user/register/person", response_model=Detail)
+@router.post("/user/register/person", response_model=Token)
 def user_register(
 	user: UserCreatePerson,
 	session: Session = Depends(get_session),
 ):
-	if user.phone:
-		phone = get_phone(session, user.phone)
-
-		if phone:
-			raise HTTPException(
-				status_code=409,
-				detail="Phone is already registered and active"
-			)
-
-	# Create user
-	# db_email = create_user(session, user)
-
-	return {"detail": "User created"}
-
-"""
-@router.post("/user/register", response_model=Detail)
-def user_register(
-	user: UserCreate,
-	session: Session = Depends(get_session),
-):
-	email = get_email(session, user.email)
-
-	if email:
-		raise HTTPException(
-			status_code=409,
-			detail="Email is already registered and active"
-		)
-
 	phone = get_phone(session, user.phone)
 
 	if phone:
@@ -65,31 +37,17 @@ def user_register(
 			detail="Phone is already registered and active"
 		)
 
-	password_res: dict[str, bool] = password_check(user.password)
-	
-	if not password_res['password_ok']:
-		raise HTTPException(
-			status_code=409,
-			detail=password_res,
-		)
+	db_user = create_user(session, user)
 
-	# Create user
-	db_email = create_user(session, user)
-
-	# Send email to validate email
-	token = create_jwt(
-		str(db_email.id_email),
-		JWTSlug.verify_email,
+	access_token = create_jwt(
+		str(db_user.id_user),
+		JWTSlug.information,
 	)
 
-	url = f"{settings.URI_FRONTEND}/validate-email/{token}"
-
-	validate_email(user.email, url)
-
-	# TODO: Send message to validate phone
-
-	return {"detail": "User created check your email for validation"}
-"""
+	return {
+		"access_token": access_token,
+		"token_type": "bearer"
+	}
 
 
 @router.post("/user/login/email", response_model=Token)

@@ -22,6 +22,7 @@ credentials_exception = HTTPException(
 
 class JWTSlug:
 	access = "access"
+	information = "information"
 	verify_email = "verify_email"
 	reset_password = "reset_password"
 

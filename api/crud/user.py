@@ -41,35 +41,28 @@ def create_user(session: Session, user: UserCreatePerson) -> User:
 			detail="The country of your nationality do not exist"
 		)
 		
-	status = get_user_status(session, "waiting-for-document")
+	status = get_user_status(session, "waiting-for-address")
+
+	hashed_password = get_password_hash(user.password)
 
 	db_user = User(
 		first_name=user.first_name,
 		last_name=user.last_name,
+		password=hashed_password,
 		status=status,
 		alpha3=user.country.alpha3,
 	)
 	
+	db_phone = Phone(
+		user=db_user,
+		phone=user.phone,
+	)
+
 	session.add(db_user)
-
-	if user.email:
-		db_email = Email(
-			user=db_user,
-			email=user.email.email,
-		)
-
-		session.add(db_email)
-
-	if user.phone:
-		db_phone = Phone(
-			user=db_user,
-			phone=user.phone.phone,
-		)
-	
-		session.add(db_phone)
-
+	session.add(db_phone)
 
 	session.commit()
+
 	session.refresh(db_user)
 	
 	return db_user
