@@ -29,21 +29,6 @@ def user_register(
 	user: UserCreatePerson,
 	session: Session = Depends(get_session),
 ):
-	if not user.phone and not user.email:
-		raise HTTPException(
-			status_code=409,
-			detail="Must have phone or email for verification"
-		)
-
-	if user.email:
-		email = get_email(session, user.email)
-
-		if email:
-			raise HTTPException(
-				status_code=409,
-				detail="Email is already registered and active"
-			)
-
 	if user.phone:
 		phone = get_phone(session, user.phone)
 

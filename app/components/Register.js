@@ -5,73 +5,59 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 import KeyboardView from './KeyboardView';
 import { Formik } from 'formik';
+import * as Yup from 'yup';
+import FormikInput from './FormikInput';
+ 
+const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
+
+const RegisterSchema = Yup.object().shape({
+  firstname: Yup.string()
+	.min(2, 'Too Short!')
+	.max(50, 'Too Long!')
+	.required('Required'),
+  lastname: Yup.string()
+	.min(2, 'Too Short!')
+	.max(50, 'Too Long!')
+	.required('Required'),
+  phone: Yup.string().matches(phoneRegExp, 'Invalid phone number'),
+  country: Yup.string().required('Required'),
+  password: Yup.string().required('Password is required'),
+  passwordConfirmation: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match')
+});
 
 
 const Register = ({navigation}) => {
- 	const [firstname, onChangeFirstname] = useState('');
- 	const [lastname, onChangeLastname] = useState('');
- 	const [country, onChangeCountry] = useState(null);
 	const [countries, setCountries] = useState([]);
- 	const [email, onChangeEmail] = useState('');
- 	const [phone, onChangePhone] = useState('');
- 	const [password, onChangePassword] = useState('');
 
-	const [errors, setErrors] = useState({});
+	const register = async (values) => {
+		var payload = {
+			first_name: values.firstname,
+			last_name: values.lastname,
+			password: values.password,
+			phone: values.phone,
+			country: {
+				alpha3: values.country,
+			},
+		};
 
-
-	const register = async () => {
-		let errorForm = {};
-
-		// Validate name field 
-		if (!firstname) {errorForm.firstname = 'Firstname is required';}
-		if (!lastname) {errorForm.lastname = 'Lastname is required';}
-		if (!country) {errorForm.country = 'Choose a country';}
-		if (!password) {errorForm.password = 'Password is required';}
-		if (!email && !phone) {errorForm.emailPhone = 'There must be phone or email';}
-
-
-		console.log("LA")
-		if (Object.keys(errorForm).length === 0) {
-			console.log("ICI")
-
-			var payload = {
-				first_name: firstname,
-				last_name: lastname,
-				password: password,
-				country: {
-					alpha3: country,
-				},
-			};
-
-			if (phone) {
-				payload['phone'] = phone
+		await fetch('http://192.168.1.64:3000/user/register/person', {
+			method: 'POST',
+			headers: {"content-type": "application/json"},
+			body: JSON.stringify(payload),
+		})
+		.then(response => response.json())
+		.then(response => {
+			if (response.status == 409) {
+				console.error(response["detail"]);
+			} else {
+				console.log("Account created");
 			}
-
-			if (email) {
-				payload['email'] = email 
-			}
-			
-			const response = await fetch('http://192.168.1.64:3000/user/register/person', {
-				method: 'POST',
-				headers: {"content-type": "application/json"},
-				body: JSON.stringify(payload),
-			})
-			.then(response => response.json())
-			.then(response => {
-				if (response.status == 409) {
-					console.error(response["detail"]);
-				} else {
-					console.log("Account created");
-				}
-			})
-			.catch(error => {
-				console.error("Une erreur a eu lieu lors de la création de compte");
-			});
-		}
-
-		setErrors(errorForm);
+		})
+		.catch(error => {
+			console.error(error);
+		});
 	}
- 
+
 	const getCountries = async () => {
 		try {
 			const response = await fetch('http://192.168.1.64:3000/countries');
@@ -90,88 +76,82 @@ const Register = ({navigation}) => {
 		<KeyboardView>
 			<View style={[styles.container]}>
 				<Text style={[styles.bold]}>Créer un compte</Text>
-				<Text style={[styles.label]}>
-					Prénom
-					<Text style={[styles.red]}>*</Text>
-				</Text>
-				<TextInput
-					style={[styles.input, styles.label]}
-					onChangeText={onChangeFirstname}
-					value={firstname}
-				/>
-				{errors.firstname ? <Text style={[styles.red]}>{errors.firstname}</Text> : null}
-
-				<Text style={[styles.label]}>
-					Nom
-					<Text style={[styles.red]}>*</Text>
-				</Text>
-				<TextInput
-					style={[styles.input, styles.label]}
-					onChangeText={onChangeLastname}
-					value={lastname}
-				/>
-				{errors.lastname ? <Text style={[styles.red]}>{errors.lastname}</Text> : null}
-
-				<Text style={[styles.label]}>
-					Nationalité
-					<Text style={[styles.red]}>*</Text>
-				</Text>
-				<Dropdown
-					style={[styles.select, styles.label]}
-					data={countries}
-					search
-					labelField="name"
-					valueField="alpha3"
-					placeholder="Choissisez un pays"
-					searchPlaceholder="Recherche"
-					value={country}
-					onChange={item => {
-						onChangeCountry(item.alpha3);
+				<Formik
+					initialValues={{
+						firstname: '',
+						lastname: '',
+						phone: '',
+						country: '',
+						password: '',
+						passwordConfirmation: '',
 					}}
-				/>
-				{errors.country? <Text style={[styles.red]}>{errors.country}</Text> : null}
-
-				<Text style={[styles.label]}>Email</Text>
-				<TextInput
-					style={[styles.input, styles.label]}
-					onChangeText={onChangeEmail}
-					value={email}
-				/>
-				<Text style={[styles.label]}>Phone</Text>
-				<TextInput
-					style={[styles.input, styles.label]}
-					onChangeText={onChangePhone}
-					value={phone}
-				/>
-				{errors.emailPhone? <Text style={[styles.red]}>{errors.emailPhone}</Text> : null}
-
-
-				<Text style={[styles.label]}>
-					Mot de passe
-					<Text style={[styles.red]}>*</Text>
-				</Text>
-				<TextInput
-					secureTextEntry={true}
-					style={[styles.input, styles.label]}
-					onChangeText={onChangePassword}
-					value={password}
-				/>
-				{errors.password ? <Text style={[styles.red]}>{errors.password}</Text> : null}
-
-				<View style={[styles.button]}>
-					<Button
-						title="Créer un compte"
-						color="white"
-						onPress={register}
-					/>
-				</View>
-				<View style={[styles.button]}>
-					<Button
-						title="Retour a la connexion"
-						color="white"
-						onPress={() => navigation.navigate('Home')}
-					/>
-				</View>
+					onSubmit={values => register(values)}
+					validationSchema={RegisterSchema}
+				>
+					{({ handleChange, setFieldTouched, setFieldValue, handleSubmit, values, errors, touched}) => (
+						<View>
+							<FormikInput
+								label="Prénom"
+								value={values.firstname}
+								name="firstname"
+								handleChange={handleChange('firstname')}
+								setFieldTouched={() => setFieldTouched('firstname')}
+								errors={errors}
+								touched={touched}
+							/>
+							<FormikInput
+								label="Nom"
+								value={values.lastname}
+								name="lastname" handleChange={handleChange('lastname')}
+								setFieldTouched={() => setFieldTouched('lastname')}
+								errors={errors}
+								touched={touched}
+							/>
+							<FormikInput
+								label="Téléphone"
+								value={values.phone}
+								name="phone" handleChange={handleChange('phone')}
+								setFieldTouched={() => setFieldTouched('phone')}
+								errors={errors}
+								touched={touched}
+							/>
+							<Text style={[styles.label]}>Nationalité</Text>
+							<Dropdown
+								style={[styles.select, styles.label]}
+								data={countries}
+								search
+								labelField="name"
+								valueField="alpha3"
+								placeholder="Choissisez un pays"
+								searchPlaceholder="Recherche"
+								value={values.country}
+								onChange={item => {
+									setFieldValue('country', item.alpha3)
+								}}
+							/>
+            				{touched.country && errors.country && <Text style={{ fontSize: 10, color: 'red' }}>{errors.country}</Text>}
+							<FormikInput
+								label="Mot de passe"
+								value={values.password}
+								name="password"
+								handleChange={handleChange('password')}
+								setFieldTouched={() => setFieldTouched('password')}
+								errors={errors}
+								touched={touched}
+							/>
+							<FormikInput
+								label="Confirmé le mot de passe"
+								value={values.passwordConfirmation}
+								name="passwordConfirmation"
+								handleChange={handleChange('passwordConfirmation')}
+								setFieldTouched={() => setFieldTouched('passwordConfirmation')}
+								errors={errors}
+								touched={touched}
+							/>
+							<Button onPress={handleSubmit} title="Submit" />
+						</View>
+					)}
+   				</Formik>
 			</View>
 		</KeyboardView>
 	)

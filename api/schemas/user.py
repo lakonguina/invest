@@ -76,7 +76,7 @@ class UserCreate(UserBase, UserPasswordField):
 	address: AddressIn
 
 
-class UserCreatePerson(UserPasswordField, PhoneFieldOptional, EmailFieldOptional, UserBase):
+class UserCreatePerson(UserPasswordField, PhoneField, UserBase):
 	country: CountryIn
 
 
