@@ -1,10 +1,20 @@
-import React from 'react';
+import {useState, useEffect} from 'react';
 import { Button, ScrollView, Text, TextInput, View } from 'react-native';
 import styles from '../style';
+import { getData } from './storage';
 
 const Home = ({ navigation }) => {
- 	const [phone, onChangePhone] = React.useState('');
- 	const [password, onChangePassword] = React.useState('');
+ 	const [phone, onChangePhone] = useState('');
+ 	const [password, onChangePassword] = useState('');
+
+	const checkAccessToken = async () => {
+		const accessToken = await getData("accessToken");
+		console.log("Check access token", accessToken);
+	}
+
+	useEffect(() => {
+		checkAccessToken();
+	}, []);
 
 	return (
 		<ScrollView style={styles.container}>

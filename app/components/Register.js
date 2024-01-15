@@ -8,7 +8,7 @@ import KeyboardView from './KeyboardView';
 import { Formik } from 'formik';
 import FormikInput from './FormikInput';
 import * as Yup from 'yup';
-import storeData from './storage';
+import { storeData } from './storage';
  
 const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
 

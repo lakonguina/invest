@@ -50,6 +50,13 @@ def user_register(
 	}
 
 
+@router.post("/user/register/address", response_model=Detail)
+def user_register_address(
+	password: UserPasswordField,
+	session: Session = Depends(get_session),
+):
+	id_user: int  = decode_jwt(jwt, JWTSlug.information)
+
 @router.post("/user/login/email", response_model=Token)
 def user_login_by_email(
 	user: UserLoginByEmail,
@@ -81,61 +88,6 @@ def user_login_by_email(
 		"token_type": "bearer"
 	}
 
-
-@router.get("/user/email/send/verification-email/", response_model=Detail)
-def user_send_email(
-	session: Session = Depends(get_session),
-    id_user: int = Depends(has_access),
-):
-	db_email = get_email_by_user(session, id_user)
-
-	if db_email.is_valid == True:
-		raise HTTPException(
-			status_code=400,
-			detail="Email is already validated"
-		)
-
-	jwt = create_jwt(
-		str(db_email.id_email),
-		JWTSlug.verify_email,
-	)
-
-	url = f"{settings.URI_FRONTEND}/validate-email/{jwt}"
-
-	validate_email(db_email.email, url)
-
-	return {"detail": "Email sended"}
-
-
-@router.get("/user/email/verify/{jwt}", response_model=None)
-def user_verify_email(
-    jwt: str,
-	session: Session = Depends(get_session),
-):
-	id_email: int = decode_jwt(jwt, JWTSlug.verify_email)
-	db_email = get_email_by_id(session, id_email)
-
-	if not db_email:
-		raise HTTPException(
-			status_code=400,
-			detail="Email not found"
-		)
-
-	if db_email.is_valid:
-		raise HTTPException(
-			status_code=400,
-			detail="Email already validated"
-		)
-
-	db_email.is_valid = True
-	db_email.date_validation = datetime.now()
-
-	session.add(db_email)
-	session.commit()
-
-	return {"detail": "Email validated"}
-
-
 @router.get("/user/information", response_model=UserInformation)
 def user_information(
 	session: Session = Depends(get_session),
@@ -144,46 +96,3 @@ def user_information(
 	db_user = get_user_by_id(session, id_user)
 
 	return db_user
-
-@router.post("/user/email/send/reset-password", response_model=Detail)
-def user_reset_password_by_email(
-	email: EmailField,
-	session: Session = Depends(get_session),
-):
-	db_user = get_user_by_email(session, email.email)
-
-	if not db_user:
-		raise HTTPException(
-			status_code=400,
-			detail="Email not found"
-		)
-
-	token: str = create_jwt(
-		str(db_user.id_user),
-		JWTSlug.reset_password,
-	)
-
-	url = f"{settings.URI_FRONTEND}/validate-email/{token}"
-
-	reset_password(email.email, url)
-	
-	return {"detail": "Your password reset link as been sent at your email"}
-
-
-@router.post("/user/reset-password/{jwt}", response_model=Detail)
-def user_reset_password(
-    jwt: str,
-	password: UserPasswordField,
-	session: Session = Depends(get_session),
-):
-	id_user: int  = decode_jwt(jwt, JWTSlug.reset_password)
-
-	db_user = get_user_by_id(session, id_user)
-
-	hashed_password = get_password_hash(password.password)
-	db_user.password = hashed_password
-
-	session.add(db_user)
-	session.commit()
-
-	return {"detail": "Password updated"}
