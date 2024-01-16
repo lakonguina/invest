@@ -66,7 +66,7 @@ class User(UserBase, UserPasswordField, table=True):
 		}
 	)
 
-	document: DocumentUser = Relationship(back_populates="user")
+	document: list[DocumentUser] | None = Relationship(back_populates="user")
 
 
 class UserCreate(UserBase, UserPasswordField):
@@ -86,8 +86,7 @@ class UserLoginByEmail(EmailField, UserPasswordField):
 
 class UserInformation(UserBase):
 	status: UserStatusOut
-	email: EmailOut
 	phone: PhoneOut
 	country: Country
-	address: AddressOut
-	document: DocumentUser
+	address: AddressOut | None
+	document: list[DocumentUser] | None

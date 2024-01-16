@@ -14,6 +14,7 @@ from api.dependencies.email import validate_email, reset_password
 from api.schemas.detail import Detail
 from api.schemas.document import DocumentUserTypeSlug
 from api.schemas.user import UserCreate, UserCreatePerson, UserInformation, UserLoginByEmail, UserPasswordField
+from api.schemas.address import AddressIn
 from api.schemas.token import Token
 from api.schemas.email import EmailField
 
@@ -41,7 +42,7 @@ def user_register(
 
 	access_token = create_jwt(
 		str(db_user.id_user),
-		JWTSlug.information,
+		JWTSlug.access,
 	)
 
 	return {
@@ -52,10 +53,21 @@ def user_register(
 
 @router.post("/user/register/address", response_model=Detail)
 def user_register_address(
-	password: UserPasswordField,
+	address: AddressIn,
 	session: Session = Depends(get_session),
+    id_user: int = Depends(has_access),
 ):
-	id_user: int  = decode_jwt(jwt, JWTSlug.information)
+	user = get_user_by_id(sessions, id_user)
+
+	if user.status.slug != "waiting-for-address":
+		raise HTTPException(
+			status_code=409,
+			detail="Phone is already registered and active"
+		)
+		
+	#id_user: int  = decode_jwt(jwt, JWTSlug.information)
+	return {"test": "test"}
+
 
 @router.post("/user/login/email", response_model=Token)
 def user_login_by_email(
@@ -87,6 +99,7 @@ def user_login_by_email(
 		"access_token": access_token,
 		"token_type": "bearer"
 	}
+
 
 @router.get("/user/information", response_model=UserInformation)
 def user_information(

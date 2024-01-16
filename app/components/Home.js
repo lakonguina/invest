@@ -9,7 +9,35 @@ const Home = ({ navigation }) => {
 
 	const checkAccessToken = async () => {
 		const accessToken = await getData("accessToken");
-		console.log("Check access token", accessToken);
+
+		if (accessToken) {
+			console.log("Check access token", accessToken);
+			const bearer = `Bearer ${accessToken}`;
+
+            fetch("http://192.168.1.64:3000/user/information", {
+                method: "GET",
+                headers: {
+                    "content-type": "application/json",
+                    "authorization": bearer,
+                },
+            })
+
+			.then(response => response.json())
+			.then(response => {
+				console.log(response);
+				switch (response.status.slug) {
+					case "waiting-for-address":
+						navigation.navigate('Address')
+						break;
+				}
+			})
+			.catch(error => {
+				console.error(error);
+			});
+
+		} else {
+			console.log("There is no access token")
+		}
 	}
 
 	useEffect(() => {
