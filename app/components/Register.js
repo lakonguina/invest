@@ -151,10 +151,20 @@ const Register = ({navigation}) => {
 								errors={errors}
 								touched={touched}
 							/>
-							<Button onPress={handleSubmit} title="Submit" />
+							<View style={[styles.button]}>
+								<Button onPress={handleSubmit} title="Créer un compte" color="white"/>
+							</View>
 						</View>
 					)}
    				</Formik>
+				<View style={[styles.label]}>
+					<Text
+						style={[styles.link]} 
+						onPress={() => navigation.navigate("Home")}
+					>
+						Retour a la page de connexion
+					</Text>
+				</View>
 			</View>
 		</KeyboardView>
 	)

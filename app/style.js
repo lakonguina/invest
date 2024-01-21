@@ -6,6 +6,10 @@ const styles = StyleSheet.create({
 		paddingLeft: 30,
 		paddingRight: 30,
 	},
+	link: {
+		color: "blue",
+		textDecorationLine:'underline',
+	},
 	flex: {
 		flexGrow: 1
 	},

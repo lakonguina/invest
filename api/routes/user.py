@@ -21,6 +21,7 @@ from api.schemas.email import EmailField
 from api.crud.email import get_email, get_email_by_id, get_email_by_user
 from api.crud.phone import get_phone
 from api.crud.user import create_user, get_user_by_email, get_user_by_id
+from api.crud.address import create_address
 
 
 router = APIRouter(tags=["Users"])
@@ -51,22 +52,23 @@ def user_register(
 	}
 
 
-@router.post("/user/register/address", response_model=Detail)
+@router.post("/user/register/address", response_model=Detail, status_code=200)
 def user_register_address(
 	address: AddressIn,
 	session: Session = Depends(get_session),
     id_user: int = Depends(has_access),
 ):
-	user = get_user_by_id(sessions, id_user)
+	user = get_user_by_id(session, id_user)
 
 	if user.status.slug != "waiting-for-address":
 		raise HTTPException(
 			status_code=409,
-			detail="Phone is already registered and active"
+			detail="Wrong slug"
 		)
+
+	create_address(session, address, user)
 		
-	#id_user: int  = decode_jwt(jwt, JWTSlug.information)
-	return {"test": "test"}
+	return {"detail": "Address registered"}
 
 
 @router.post("/user/login/email", response_model=Token)

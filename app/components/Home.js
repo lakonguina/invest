@@ -1,12 +1,21 @@
-import {useState, useEffect} from 'react';
-import { Button, ScrollView, Text, TextInput, View } from 'react-native';
+import { useEffect} from 'react';
+import { Button, View, Text } from 'react-native';
 import styles from '../style';
 import { getData } from './storage';
+import KeyboardView from './KeyboardView';
+
+import FormikInput from './FormikInput';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+
+const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
+
+const LoginSchema = Yup.object().shape({
+	phone: Yup.string().matches(phoneRegExp, 'Invalid phone number'),
+	password: Yup.string().required('Password is required'),
+});
 
 const Home = ({ navigation }) => {
- 	const [phone, onChangePhone] = useState('');
- 	const [password, onChangePassword] = useState('');
-
 	const checkAccessToken = async () => {
 		const accessToken = await getData("accessToken");
 
@@ -25,10 +34,12 @@ const Home = ({ navigation }) => {
 			.then(response => response.json())
 			.then(response => {
 				console.log(response);
-				switch (response.status.slug) {
-					case "waiting-for-address":
-						navigation.navigate('Address')
-						break;
+				if (response.status.slug == "waiting-for-address") {
+					console.log(response)
+					navigation.navigate('Address');
+				} else if (response.status.slug == "waiting-for-document") {
+					console.log(response)
+					navigation.navigate('Document');
 				}
 			})
 			.catch(error => {
@@ -45,34 +56,51 @@ const Home = ({ navigation }) => {
 	}, []);
 
 	return (
-		<ScrollView style={styles.container}>
-			<Text style={[styles.bold]}>Connexion</Text>
-			<Text style={[styles.label]}>Phone</Text>
-			<TextInput
-				style={[styles.input, styles.label]}
-				onChangeText={onChangePhone}
-				value={phone}
-			/>
-			<Text style={[styles.label]}>Password</Text>
-			<TextInput
-				style={[styles.input, styles.label]}
-				onChangeText={onChangePassword}
-				value={password}
-			/>
-			<View style={[styles.button]}>
-				<Button title="Se connecter" color="white"/>
+		<KeyboardView>
+			<View style={[styles.container]}>
+				<Formik
+					initialValues={{
+						phone: '',
+						password: '',
+					}}
+					onSubmit={values => register(values)}
+					validationSchema={LoginSchema}
+				>
+					{({ handleChange, setFieldTouched, handleSubmit, values, errors, touched}) => (
+						<View>
+							<FormikInput
+								label="Téléphone"
+								value={values.phone}
+								name="phone" handleChange={handleChange('phone')}
+								setFieldTouched={() => setFieldTouched('phone')}
+								errors={errors}
+								touched={touched}
+							/>
+							<FormikInput
+								label="Mot de passe"
+								value={values.password}
+								name="password"
+								handleChange={handleChange('password')}
+								setFieldTouched={() => setFieldTouched('password')}
+								errors={errors}
+								touched={touched}
+							/>
+							<View style={[styles.button]}>
+								<Button onPress={handleSubmit} title="Se connecter" color="white"/>
+							</View>
+						</View>
+					)}
+   				</Formik>
+				<View style={[styles.label]}>
+					<Text
+						style={[styles.link]} 
+						onPress={() => navigation.navigate("Register")}
+					>
+						S'inscrire
+					</Text>
+				</View>
 			</View>
-			<View style={[styles.button]}>
-				<Button title="Continuer avec l'adresse email" color="white"/>
-			</View>
-			<View style={[styles.button]}>
-			    <Button
-      				title="Créer un compte"
-					color="white"
-      				onPress={() => navigation.navigate('Register')}
-    			/>
-			</View>
-		</ScrollView>
+		</KeyboardView>
 	);
 }
 

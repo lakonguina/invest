@@ -11,7 +11,6 @@ const FormikInput = ({label, value, name, handleChange, setFieldTouched, errors,
         <View>
             <Text style={[styles.label]}>
                 {label}
-                <Text style={[styles.red]}>*</Text>
             </Text>
             <TextInput
                 style={[styles.input, styles.label]}

@@ -8,10 +8,10 @@ import KeyboardView from './KeyboardView';
 import { Formik } from 'formik';
 import FormikInput from './FormikInput';
 import * as Yup from 'yup';
-import storeData from './storage';
+import { getData } from './storage';
  
 
-const RegisterSchema = Yup.object().shape({
+const AddressSchema = Yup.object().shape({
   street: Yup.string()
 	.min(2, 'Too Short!')
 	.max(50, 'Too Long!')
@@ -32,24 +32,29 @@ const Address = ({navigation}) => {
 	const [countries, setCountries] = useState([]);
 
 	const register = async (values) => {
+		const accessToken = await getData("accessToken");
+		const bearer = `Bearer ${accessToken}`;
+
 		var payload = {
 			city: values.city,
 			street: values.street,
-			zipCode: values.zipCode,
-			country: values.country,
+			zip_code: values.zipCode,
+			alpha3: values.country,
 		};
 
-		await fetch('http://192.168.1.64:3000/user/register/person', {
+		await fetch('http://192.168.1.64:3000/user/register/address', {
 			method: 'POST',
-			headers: {"content-type": "application/json"},
+			headers: {
+				"content-type": "application/json",
+                "authorization": bearer,
+			},
 			body: JSON.stringify(payload),
 		})
-		.then(response => response.json())
 		.then(response => {
-			if (response.status == 409) {
-				console.error(response["detail"]);
+			if (response.status == 200) {
+				navigation.navigate('Document');
 			} else {
-				storeData(response.access_token);
+				console.error("An error occured during request");
 			}
 		})
 		.catch(error => {
@@ -63,6 +68,7 @@ const Address = ({navigation}) => {
 			const json = await response.json();
 			setCountries(json);
 		} catch (error) {
+			console.log(error);
 			console.error("Error while fetching countries");
 		}
 	};
@@ -83,12 +89,20 @@ const Address = ({navigation}) => {
 						country: '',
 					}}
 					onSubmit={values => register(values)}
-					validationSchema={RegisterSchema}
+					validationSchema={AddressSchema}
 				>
 					{({ handleChange, setFieldTouched, setFieldValue, handleSubmit, values, errors, touched}) => (
 						<View>
 							<FormikInput
-								label="Prénom"
+								label="Rue"
+								value={values.street}
+								name="street" handleChange={handleChange('street')}
+								setFieldTouched={() => setFieldTouched('street')}
+								errors={errors}
+								touched={touched}
+							/>
+							<FormikInput
+								label="Ville"
 								value={values.city}
 								name="city"
 								handleChange={handleChange('city')}
@@ -97,15 +111,7 @@ const Address = ({navigation}) => {
 								touched={touched}
 							/>
 							<FormikInput
-								label="Nom"
-								value={values.street}
-								name="street" handleChange={handleChange('street')}
-								setFieldTouched={() => setFieldTouched('street')}
-								errors={errors}
-								touched={touched}
-							/>
-							<FormikInput
-								label="TélézipCode"
+								label="Code postal"
 								value={values.zipCode}
 								name="zipCode" handleChange={handleChange('zipCode')}
 								setFieldTouched={() => setFieldTouched('zipCode')}
@@ -127,10 +133,18 @@ const Address = ({navigation}) => {
 								}}
 							/>
             				{touched.country && errors.country && <Text style={{ fontSize: 10, color: 'red' }}>{errors.country}</Text>}
-							<Button onPress={handleSubmit} title="Submit" />
+							<View style={[styles.button]}>
+								<Button onPress={handleSubmit} title="Submit" color="white"/>
+							</View>
 						</View>
 					)}
    				</Formik>
+				<Text
+					style={[styles.link, styles.label]} 
+					onPress={() => navigation.navigate("Home")}
+				>
+					Retour a la page de connexion
+				</Text>
 			</View>
 		</KeyboardView>
 	)
